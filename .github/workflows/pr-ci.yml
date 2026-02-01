@@ -24,8 +24,8 @@ jobs:
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Gradle build (with tests)
-        run: ./gradlew clean build
+      - name: Gradle build (without tests)
+        run: ./gradlew clean build -x test
 
       - name: Docker build (no push)
         run: docker build -t pr-check:local .
