@@ -1,30 +1,62 @@
-version: "3.9"
-
-networks:
-  bllsoneshot-net:
-    driver: bridge
-
 services:
   mysql:
     image: mysql:8.4
     container_name: bllsoneshot-mysql
     restart: unless-stopped
+    env_file: .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: Asia/Seoul
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     networks: [bllsoneshot-net]
 
   redis:
     image: redis:7-alpine
     container_name: bllsoneshot-redis
     restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
     networks: [bllsoneshot-net]
 
   app:
     image: ${APP_IMAGE}
     container_name: bllsoneshot-app
     restart: unless-stopped
-    env_file: [.env]
-    networks: [bllsoneshot-net]
+    env_file: .env
+    environment:
+      TZ: Asia/Seoul
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SPRING_DATA_REDIS_HOST: ${SPRING_DATA_REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${SPRING_DATA_REDIS_PORT}
     ports:
-      - "8080:8080"
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [bllsoneshot-net]
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -33,4 +65,10 @@ services:
     command: tunnel --no-autoupdate run
     environment:
       - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    depends_on:
+      - app
     networks: [bllsoneshot-net]
+
+networks:
+  bllsoneshot-net:
+    driver: bridge

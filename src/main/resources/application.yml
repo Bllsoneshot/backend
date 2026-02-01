@@ -6,15 +6,14 @@ spring:
     name: bllsoneshot
 
   datasource:
-    # docker-compose?? mysql ????(mysql)? ?? ??
-    url: ${SPRING_DATASOURCE_URL}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/bllsoneshot_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
+
   data:
     redis:
-      # docker-compose?? redis ????(redis)? ?? ??
       host: ${SPRING_DATA_REDIS_HOST}
       port: ${SPRING_DATA_REDIS_PORT}
 
@@ -28,3 +27,4 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+
