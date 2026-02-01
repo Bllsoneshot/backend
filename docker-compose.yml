@@ -1,69 +1,36 @@
+version: "3.9"
+
+networks:
+  bllsoneshot-net:
+    driver: bridge
+
 services:
   mysql:
     image: mysql:8.4
     container_name: bllsoneshot-mysql
     restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    volumes:
-      - mysql_data:/var/lib/mysql
-    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - bllsoneshot-net
+    networks: [bllsoneshot-net]
 
   redis:
     image: redis:7-alpine
     container_name: bllsoneshot-redis
     restart: unless-stopped
-    volumes:
-      - redis_data:/data
-    command: ["redis-server", "--appendonly", "yes"]
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - bllsoneshot-net
+    networks: [bllsoneshot-net]
 
   app:
     image: ${APP_IMAGE}
     container_name: bllsoneshot-app
     restart: unless-stopped
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    env_file:
-      - .env
+    env_file: [.env]
+    networks: [bllsoneshot-net]
     ports:
-      - "127.0.0.1:${APP_PORT:-8080}:8080"
-    networks:
-      - bllsoneshot-net
+      - "8080:8080"
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: bllsoneshot-cloudflared
     restart: unless-stopped
-    command: ["tunnel", "run", "--token", "${CF_TUNNEL_TOKEN}"]
-    depends_on:
-      - app
-    networks:
-      - bllsoneshot-net
-
-volumes:
-  mysql_data:
-  redis_data:
-
-networks:
-  bllsoneshot-net:
-    driver: bridge
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    networks: [bllsoneshot-net]
