@@ -60,7 +60,6 @@ services:
 
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: bllsoneshot-cloudflared
     restart: unless-stopped
     command: tunnel run
     volumes:
