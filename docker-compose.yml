@@ -61,11 +61,7 @@ services:
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
-    command: tunnel run
-    volumes:
-      - ./cloudflared:/etc/cloudflared
-    environment:
-      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    command: tunnel run --token ${CF_TUNNEL_TOKEN}
     depends_on:
       - app
     networks: [bllsoneshot-net]
