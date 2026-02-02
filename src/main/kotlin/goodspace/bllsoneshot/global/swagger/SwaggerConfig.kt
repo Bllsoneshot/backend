@@ -17,8 +17,7 @@ class SwaggerConfig {
         return OpenAPI()
             .servers(
                 listOf(
-                    Server().url("https://runners-hi.site").description("배포 서버 URL 1"),
-                    Server().url("https://api.runners-hi.site").description("배포 서버 URL 2"),
+                    Server().url("https://bllsoneshot.xyz/api").description("배포 서버 URL 1"),
                     Server().url("http://localhost:8080").description("로컬")
                 )
             )
@@ -26,8 +25,8 @@ class SwaggerConfig {
             .components(Components().addSecuritySchemes("Bearer Authentication", createAPIKeyScheme()))
             .info(
                 Info()
-                    .title("Runner's High API")
-                    .description("러너스하이 서비스의 API 명세서입니다.")
+                    .title("Bllsoneshot API")
+                    .description("블스원샷 팀의 설스터디 API 명세서입니다.")
                     .version("1.0.0")
             )
     }
