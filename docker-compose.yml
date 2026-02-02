@@ -60,11 +60,8 @@ services:
 
   cloudflared:
     image: cloudflare/cloudflared:latest
-    container_name: bllsoneshot-cloudflared
     restart: unless-stopped
-    command: tunnel --no-autoupdate run
-    environment:
-      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
+    command: tunnel run --token ${CF_TUNNEL_TOKEN}
     depends_on:
       - app
     networks: [bllsoneshot-net]
