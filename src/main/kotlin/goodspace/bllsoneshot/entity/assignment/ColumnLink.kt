@@ -5,15 +5,12 @@ import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToOne
 
 @Entity
-class ProofShot(
+class ColumnLink(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
     val task: Task,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    val file: File
+    val link: String
 ) : BaseEntity()

@@ -1,6 +1,7 @@
 package goodspace.bllsoneshot.entity.assignment
 
 import goodspace.bllsoneshot.entity.BaseEntity
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
@@ -8,12 +9,15 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 
 @Entity
-class ProofShot(
+class CommentAnnotation(
+    @OneToOne(mappedBy = "commentAnnotation", fetch = FetchType.LAZY)
+    val comment: Comment,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    val task: Task,
+    val proofShot: ProofShot,
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    val file: File
+    @Column(nullable = false)
+    val xPercent: Double,
+    @Column(nullable = false)
+    val yPercent: Double
 ) : BaseEntity()

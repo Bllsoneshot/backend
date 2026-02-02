@@ -21,7 +21,7 @@ class TokenProvider(
     @Value("\${keys.jwt.access-token-validity-in-milliseconds}") private val validityTime: Long
 ) {
     companion object {
-        private const val TOKEN_TYPE_CLAIM = "PlanFit/TokenType"
+        private const val TOKEN_TYPE_CLAIM = "bllsoneshot/TokenType"
         private const val BEARER = "Bearer "
         private const val AUTHORIZATION = "Authorization"
         private const val ROLES = "roles"

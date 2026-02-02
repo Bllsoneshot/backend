@@ -3,6 +3,11 @@ server:
   servlet:
     context-path: /api
 
+keys:
+  jwt:
+    secret: ${KEYS_JWT_SECRET}
+    access-token-validity-in-milliseconds: ${KEYS_JWT_ACCESS_TOKEN_VALIDITY_IN_MILLISECONDS:3600000}
+
 app:
   auth:
     refresh-token-cookie:
