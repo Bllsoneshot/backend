@@ -1,13 +1,20 @@
 package goodspace.bllsoneshot.task.service
 
+import goodspace.bllsoneshot.entity.assignment.Comment
+import goodspace.bllsoneshot.entity.assignment.CommentAnnotation
+import goodspace.bllsoneshot.entity.assignment.CommentType
+import goodspace.bllsoneshot.entity.assignment.ProofShot
+import goodspace.bllsoneshot.entity.assignment.RegisterStatus
 import goodspace.bllsoneshot.entity.assignment.Task
 import goodspace.bllsoneshot.entity.user.UserRole
 import goodspace.bllsoneshot.global.exception.ExceptionMessage.*
-import goodspace.bllsoneshot.repository.task.ProofShotRepository
+import goodspace.bllsoneshot.repository.file.FileRepository
 import goodspace.bllsoneshot.repository.task.TaskRepository
 import goodspace.bllsoneshot.repository.user.UserRepository
 import goodspace.bllsoneshot.task.dto.request.MenteeTaskCreateRequest
+import goodspace.bllsoneshot.task.dto.request.ProofShotRequest
 import goodspace.bllsoneshot.task.dto.request.TaskCompleteUpdateRequest
+import goodspace.bllsoneshot.task.dto.request.TaskSubmitRequest
 import goodspace.bllsoneshot.task.dto.response.feedback.TaskFeedbackResponse
 import goodspace.bllsoneshot.task.dto.response.TaskResponse
 import goodspace.bllsoneshot.task.mapper.TaskFeedbackMapper
@@ -19,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class TaskService(
     private val taskRepository: TaskRepository,
-    private val proofShotRepository: ProofShotRepository,
+    private val fileRepository: FileRepository,
     private val userRepository: UserRepository,
     private val taskMapper: TaskMapper,
     private val taskFeedbackMapper: TaskFeedbackMapper
@@ -69,6 +76,20 @@ class TaskService(
     }
 
     @Transactional
+    fun submitTask(userId: Long, taskId: Long, request: TaskSubmitRequest) {
+        val task = taskRepository.findByIdWithMenteeAndGeneralCommentAndProofShots(taskId)
+            ?: throw IllegalArgumentException(TASK_NOT_FOUND.message)
+
+        validateTaskOwnership(task, userId)
+        validateTaskSubmittable(task)
+
+        removeExistingProofShotsAndComments(task)
+        createProofShotsAndQuestions(task, request.proofShots)
+
+        taskRepository.save(task)
+    }
+
+    @Transactional
     fun updateCompleted(
         userId: Long,
         taskId: Long,
@@ -79,6 +100,42 @@ class TaskService(
         validateTaskOwnership(task, userId)
 
         task.completed = request.completed
+    }
+
+    private fun removeExistingProofShotsAndComments(task: Task) {
+        task.comments.clear()
+        task.proofShots.clear()
+    }
+
+    private fun createProofShotsAndQuestions(task: Task, proofShotRequests: List<ProofShotRequest>) {
+        for (proofShotRequest in proofShotRequests) {
+            val file = fileRepository.findById(proofShotRequest.imageFileId)
+                .orElseThrow { IllegalArgumentException(FILE_NOT_FOUND.message) }
+            val proofShot = ProofShot(task = task, file = file)
+
+            for ((index, question) in proofShotRequest.questions.withIndex()) {
+                val annotation = CommentAnnotation(
+                    proofShot = proofShot,
+                    number = index + 1,
+                    xPercent = question.xPercent.toDouble(),
+                    yPercent = question.yPercent.toDouble()
+                )
+                val comment = Comment(
+                    task = task,
+                    proofShot = proofShot,
+                    commentAnnotation = annotation,
+                    content = question.content,
+                    type = CommentType.QUESTION,
+                    registerStatus = RegisterStatus.REGISTERED
+                )
+                annotation.comment = comment
+
+                proofShot.comments.add(comment)
+                task.comments.add(comment)
+            }
+
+            task.proofShots.add(proofShot)
+        }
     }
 
     private fun findTaskBy(taskId: Long): Task {
@@ -95,5 +152,9 @@ class TaskService(
 
     private fun validateHasFeedback(task: Task) {
         check(task.hasFeedback()) { FEEDBACK_NOT_FOUND.message }
+    }
+
+    private fun validateTaskSubmittable(task: Task) {
+        check(!task.hasFeedback()) { TASK_NOT_SUBMITTABLE.message }
     }
 }
