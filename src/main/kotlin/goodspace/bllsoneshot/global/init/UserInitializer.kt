@@ -20,26 +20,35 @@ class UserInitializer(
     private val mentorLoginId: String,
     @Value("\${init.mentor.password:mentor123}")
     private val mentorPassword: String,
+    @Value("\${init.mentor.name:기본멘토}")
+    private val mentorName: String,
+
     @Value("\${init.mentee1.login-id:mentee1}")
     private val mentee1LoginId: String,
     @Value("\${init.mentee1.password:mentee1}")
     private val mentee1Password: String,
+    @Value("\${init.mentee1.name:기본멘티1}")
+    private val mentee1Name: String,
+
     @Value("\${init.mentee2.login-id:mentee2}")
     private val mentee2LoginId: String,
     @Value("\${init.mentee2.password:mentee2}")
-    private val mentee2Password: String
+    private val mentee2Password: String,
+    @Value("\${init.mentee2.name:기본멘티2}")
+    private val mentee2Name: String
 ) : ApplicationRunner {
 
     override fun run(args: ApplicationArguments) {
-        initIfNotExists(mentorLoginId, mentorPassword, ROLE_MENTOR)
-        initIfNotExists(mentee1LoginId, mentee1Password, ROLE_MENTEE)
-        initIfNotExists(mentee2LoginId, mentee2Password, ROLE_MENTEE)
+        initIfNotExists(mentorLoginId, mentorPassword, ROLE_MENTOR, mentorName)
+        initIfNotExists(mentee1LoginId, mentee1Password, ROLE_MENTEE, mentee1Name)
+        initIfNotExists(mentee2LoginId, mentee2Password, ROLE_MENTEE, mentee2Name)
     }
 
     private fun initIfNotExists(
         loginId: String,
         password: String,
-        role: UserRole
+        role: UserRole,
+        name: String
     ) {
         if (userRepository.existsByLoginId(loginId)) {
             return
@@ -48,8 +57,10 @@ class UserInitializer(
         val user = User(
             loginId = loginId,
             password = passwordEncoder.encode(password)!!,
-            role = role
+            role = role,
+            name = name
         )
+
         userRepository.save(user)
     }
 }
