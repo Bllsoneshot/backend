@@ -4,6 +4,7 @@ import goodspace.bllsoneshot.entity.assignment.Subject
 import goodspace.bllsoneshot.global.security.userId
 import goodspace.bllsoneshot.mypage.dto.response.LearningHistoryResponse
 import goodspace.bllsoneshot.mypage.dto.response.LearningStatusResponse
+import goodspace.bllsoneshot.mypage.dto.response.UserInfoResponse
 import goodspace.bllsoneshot.mypage.service.MyPageService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -25,6 +26,22 @@ import org.springframework.web.bind.annotation.RestController
 class MyPageController(
     private val myPageService: MyPageService
 ) {
+
+    @GetMapping
+    @Operation(
+        summary = "내 정보 조회",
+        description = """
+            본인의 정보를 조회합니다.
+            프로필 이미지(PNG)는 Base64 인코딩된 문자열로 반환됩니다. 없으면 null입니다.
+        """
+    )
+    fun getMyInfo(principal: Principal): ResponseEntity<UserInfoResponse> {
+        val userId = principal.userId
+
+        val response = myPageService.getMyInfo(userId)
+
+        return ResponseEntity.ok(response)
+    }
 
     @GetMapping("/learning-status")
     @Operation(
