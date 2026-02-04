@@ -1,7 +1,7 @@
 package goodspace.bllsoneshot.mentor.controller
 
 import goodspace.bllsoneshot.global.security.userId
-import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredTasksSummaryResponse
+import goodspace.bllsoneshot.mentor.dto.response.FeebackRequiredTaskSummaryResponse
 import goodspace.bllsoneshot.mentor.dto.response.TaskUnfinishedSummaryResponse
 import goodspace.bllsoneshot.mentor.service.MentorDashboardService
 import io.swagger.v3.oas.annotations.Operation
@@ -18,14 +18,14 @@ import org.springframework.web.bind.annotation.RestController
 
 @PreAuthorize("hasRole('MENTOR')")
 @RestController
-@RequestMapping("/mentors/me/dashboard")
+@RequestMapping("/mentors/dashboard")
 @Tag(name = "멘토 대시보드 API")
 class MentorDashboardController(
     private val mentorDashboardService: MentorDashboardService
 ) {
-    @GetMapping("/pending-feedback")
+    @GetMapping("/feedback-required-tasks")
     @Operation(
-        summary = "피드백 작성이 필요한 항목 조회",
+        summary = "피드백 작성이 필요한 항목 전체 조회",
         description = """
             멘토가 담당하는 멘티 중,
             오늘에 해당하는 과제 중 인증 사진을 제출했지만(ProofShot 존재)
@@ -42,15 +42,15 @@ class MentorDashboardController(
     fun getFeedbackRequiredTasks(
         principal: Principal,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): ResponseEntity<FeedbackRequiredTasksSummaryResponse> {
+    ): ResponseEntity<FeebackRequiredTaskSummaryResponse> {
         val mentorId = principal.userId
         val response = mentorDashboardService.getFeedbackRequiredTasks(mentorId, date)
         return ResponseEntity.ok(response)
     }
 
-    @GetMapping("/pending-upload")
+    @GetMapping("/unfinished-tasks")
     @Operation(
-        summary = "학습 미이행(업로드 미제출) 멘티 조회",
+        summary = "학습 미이행(업로드 미제출) 멘티 전체 조회",
         description = """
             멘토가 담당하는 멘티 중,
             오늘에 해당하는 과제는 존재하지만 인증 사진을 아직 업로드하지 않은 멘티를 조회합니다.
@@ -66,7 +66,7 @@ class MentorDashboardController(
               - menteeName: 멘티 이름
         """
     )
-    fun getPendingUploadMentees(
+    fun getTaskUnfinishedMentees(
         principal: Principal,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
     ): ResponseEntity<TaskUnfinishedSummaryResponse> {

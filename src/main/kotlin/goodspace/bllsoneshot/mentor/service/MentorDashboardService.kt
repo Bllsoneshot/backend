@@ -3,7 +3,7 @@ package goodspace.bllsoneshot.mentor.service
 import goodspace.bllsoneshot.entity.assignment.CommentType
 import goodspace.bllsoneshot.entity.assignment.RegisterStatus
 import goodspace.bllsoneshot.global.exception.ExceptionMessage.USER_NOT_FOUND
-import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredTasksSummaryResponse
+import goodspace.bllsoneshot.mentor.dto.response.FeebackRequiredTaskSummaryResponse
 
 import goodspace.bllsoneshot.mentor.dto.response.TaskUnfinishedSummaryResponse
 import goodspace.bllsoneshot.repository.task.TaskRepository
@@ -22,7 +22,7 @@ class MentorDashboardService(
     fun getFeedbackRequiredTasks(
         mentorId: Long,
         date: LocalDate
-    ): FeedbackRequiredTasksSummaryResponse {
+    ): FeebackRequiredTaskSummaryResponse {
         userRepository.findById(mentorId)
             .orElseThrow { IllegalArgumentException(USER_NOT_FOUND.message) }
 
@@ -33,7 +33,7 @@ class MentorDashboardService(
             registeredStatus = RegisterStatus.REGISTERED
         )
 
-        return FeedbackRequiredTasksSummaryResponse(
+        return FeebackRequiredTaskSummaryResponse(
             taskCount = tasks.sumOf { it.submittedTaskCount },
             menteeNames = tasks.map { it.menteeName }.distinct()
         )
