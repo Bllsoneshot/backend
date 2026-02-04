@@ -1,16 +1,22 @@
 package goodspace.bllsoneshot.mentor.controller
 
 import goodspace.bllsoneshot.global.security.userId
-import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredMenteeResponse
+import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredTasksSummaryResponse
+import goodspace.bllsoneshot.mentor.dto.response.TaskUnfinishedSummaryResponse
 import goodspace.bllsoneshot.mentor.service.MentorDashboardService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import java.security.Principal
+import java.time.LocalDate
+import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@PreAuthorize("hasRole('MENTOR')")
 @RestController
 @RequestMapping("/mentors/me/dashboard")
 @Tag(name = "멘토 대시보드 API")
@@ -19,22 +25,53 @@ class MentorDashboardController(
 ) {
     @GetMapping("/pending-feedback")
     @Operation(
-        summary = "오늘 확인해야 할 항목 조회",
+        summary = "피드백 작성이 필요한 항목 조회",
         description = """
             멘토가 담당하는 멘티 중,
-            인증 사진을 제출했지만(ProofShot 존재) 피드백이 등록되지 않은 과제만 집계합니다.
+            오늘에 해당하는 과제 중 인증 사진을 제출했지만(ProofShot 존재)
+            피드백이 등록되지 않은 과제만 집계합니다.
+            
+            [요청]
+            date: 기준 날짜(yyyy-MM-dd)
             
             [응답]
-            menteeId: 멘티 ID
-            menteeName: 멘티 이름
-            submittedTaskCount: 제출된 과제 건수(피드백 미작성)
+            taskCount: 피드백 작성이 필요한 과제 건수
+            menteeNames: 피드백 미작성 과제가 있는 멘티 이름 목록
         """
     )
-    fun getFeedbackRequiredMentees(
-        principal: Principal
-    ): ResponseEntity<List<FeedbackRequiredMenteeResponse>> {
+    fun getFeedbackRequiredTasks(
+        principal: Principal,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+    ): ResponseEntity<FeedbackRequiredTasksSummaryResponse> {
         val mentorId = principal.userId
-        val response = mentorDashboardService.getFeedbackRequiredMentees(mentorId)
+        val response = mentorDashboardService.getFeedbackRequiredTasks(mentorId, date)
+        return ResponseEntity.ok(response)
+    }
+
+    @GetMapping("/pending-upload")
+    @Operation(
+        summary = "학습 미이행(업로드 미제출) 멘티 조회",
+        description = """
+            멘토가 담당하는 멘티 중,
+            오늘에 해당하는 과제는 존재하지만 인증 사진을 아직 업로드하지 않은 멘티를 조회합니다.
+            
+            [요청]
+            date: 기준 날짜(yyyy-MM-dd)
+            
+            [응답]
+            menteeCount: 업로드 미제출 멘티 수
+            menteeNames: 업로드 미제출 멘티 이름 목록
+            mentees: 멘티 목록
+              - menteeId: 멘티 ID
+              - menteeName: 멘티 이름
+        """
+    )
+    fun getPendingUploadMentees(
+        principal: Principal,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
+    ): ResponseEntity<TaskUnfinishedSummaryResponse> {
+        val mentorId = principal.userId
+        val response = mentorDashboardService.getTaskUnfinishedMentees(mentorId, date)
         return ResponseEntity.ok(response)
     }
 }

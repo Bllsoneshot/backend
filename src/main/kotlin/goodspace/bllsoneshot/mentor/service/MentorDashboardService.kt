@@ -3,11 +3,15 @@ package goodspace.bllsoneshot.mentor.service
 import goodspace.bllsoneshot.entity.assignment.CommentType
 import goodspace.bllsoneshot.entity.assignment.RegisterStatus
 import goodspace.bllsoneshot.global.exception.ExceptionMessage.USER_NOT_FOUND
-import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredMenteeResponse
+import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredTasksSummaryResponse
+
+import goodspace.bllsoneshot.mentor.dto.response.TaskUnfinishedSummaryResponse
 import goodspace.bllsoneshot.repository.task.TaskRepository
 import goodspace.bllsoneshot.repository.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDate
+
 
 @Service
 class MentorDashboardService(
@@ -15,14 +19,40 @@ class MentorDashboardService(
     private val userRepository: UserRepository
 ) {
     @Transactional(readOnly = true)
-    fun getFeedbackRequiredMentees(mentorId: Long): List<FeedbackRequiredMenteeResponse> {
+    fun getFeedbackRequiredTasks(
+        mentorId: Long,
+        date: LocalDate
+    ): FeedbackRequiredTasksSummaryResponse {
         userRepository.findById(mentorId)
             .orElseThrow { IllegalArgumentException(USER_NOT_FOUND.message) }
 
-        return taskRepository.findFeedbackRequiredMentees(
+        val tasks = taskRepository.findFeedbackRequiredTasks(
             mentorId = mentorId,
+            date = date,
             feedbackType = CommentType.FEEDBACK,
             registeredStatus = RegisterStatus.REGISTERED
+        )
+
+        return FeedbackRequiredTasksSummaryResponse(
+            taskCount = tasks.sumOf { it.submittedTaskCount },
+            menteeNames = tasks.map { it.menteeName }.distinct()
+        )
+    }
+
+    @Transactional(readOnly = true)
+    fun getTaskUnfinishedMentees(
+        mentorId: Long,
+        date: LocalDate
+    ): TaskUnfinishedSummaryResponse {
+
+        val mentees = taskRepository.findTaskUnfinishedMentees(
+            mentorId = mentorId,
+            date = date
+        )
+
+        return TaskUnfinishedSummaryResponse(
+            menteeCount = mentees.size,
+            menteeNames = mentees.map { it.menteeName },
         )
     }
 }
