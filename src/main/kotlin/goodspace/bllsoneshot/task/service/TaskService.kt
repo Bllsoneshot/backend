@@ -180,7 +180,7 @@ class TaskService(
             return
         }
 
-        require(!(startDate == null && dueDate == null)) {
+        require(dueDate != null) {
             START_OR_END_DATE_REQUIRED.message
         }
         if (startDate != null && dueDate != null) {
