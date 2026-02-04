@@ -1,7 +1,10 @@
 package goodspace.bllsoneshot.repository.task
 
+import goodspace.bllsoneshot.entity.assignment.CommentType
+import goodspace.bllsoneshot.entity.assignment.RegisterStatus
 import goodspace.bllsoneshot.entity.assignment.Subject
 import goodspace.bllsoneshot.entity.assignment.Task
+import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredMenteeResponse
 import java.time.LocalDate
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -48,4 +51,38 @@ interface TaskRepository : JpaRepository<Task, Long> {
         """
     )
     fun findByIdWithMenteeAndGeneralCommentAndProofShots(taskId: Long): Task?
+
+    /*
+    1. Task -> mentee 조인 => 멘티 정보 가져오기
+    2. Task & mentee -> proofShots 조인 => 증빙샷이 있는 Task 필터링됨
+    3. AND NOT EXISTS 서브쿼리 => 해당 Task에 대해 피드백 댓글이 없는 것만 필터링
+    4. GROUP BY mentee.id, mentee.name => 멘티별로 그룹화
+    5. SELECT new ... => 멘티 ID, 이름, 피드백이 필요한 Task 수를 DTO로 매핑
+     */
+    @Query(
+        """
+        SELECT new goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredMenteeResponse(
+            m.id,
+            m.name,
+            COUNT(DISTINCT t.id)
+        )
+        FROM Task t
+        JOIN t.mentee m
+        JOIN t.proofShots ps
+        WHERE m.mentor.id = :mentorId
+        AND NOT EXISTS (
+            SELECT c 
+            FROM Comment c
+            WHERE c.task = t
+              AND c.type = :feedbackType
+              AND c.registerStatus = :registeredStatus
+        )
+        GROUP BY m.id, m.name
+        """
+    )
+    fun findFeedbackRequiredMentees(
+        mentorId: Long,
+        feedbackType: CommentType,
+        registeredStatus: RegisterStatus
+    ): List<FeedbackRequiredMenteeResponse>
 }
