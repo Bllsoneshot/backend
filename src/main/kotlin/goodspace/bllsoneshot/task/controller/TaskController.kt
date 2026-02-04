@@ -10,7 +10,7 @@ import goodspace.bllsoneshot.task.dto.request.TaskSubmitRequest
 import goodspace.bllsoneshot.task.dto.response.TaskDetailResponse
 import goodspace.bllsoneshot.task.dto.response.feedback.TaskFeedbackResponse
 import jakarta.validation.Valid
-import goodspace.bllsoneshot.task.dto.response.TaskSubmitResponse
+import goodspace.bllsoneshot.task.dto.response.submit.TaskSubmitResponse
 import goodspace.bllsoneshot.task.dto.response.TaskResponse
 import goodspace.bllsoneshot.task.service.TaskService
 import io.swagger.v3.oas.annotations.Operation

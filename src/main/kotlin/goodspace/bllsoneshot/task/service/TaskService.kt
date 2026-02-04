@@ -9,7 +9,7 @@ import goodspace.bllsoneshot.repository.task.TaskRepository
 import goodspace.bllsoneshot.repository.user.UserRepository
 import goodspace.bllsoneshot.task.dto.request.*
 import goodspace.bllsoneshot.task.dto.response.TaskDetailResponse
-import goodspace.bllsoneshot.task.dto.response.TaskSubmitResponse
+import goodspace.bllsoneshot.task.dto.response.submit.TaskSubmitResponse
 import goodspace.bllsoneshot.task.dto.response.TaskResponse
 import goodspace.bllsoneshot.task.dto.response.feedback.TaskFeedbackResponse
 import goodspace.bllsoneshot.task.mapper.TaskDetailMapper
