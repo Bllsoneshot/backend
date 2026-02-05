@@ -14,6 +14,9 @@ data class TaskDetailResponse(
     val goalMinutes: Int,
     val actualMinutes: Int?,
 
+    val generalComment: String?,
+    val mentorName: String,
+
     val worksheets: List<WorksheetResponse>,
     val columnLinks: List<ColumnLinkResponse>
 )
