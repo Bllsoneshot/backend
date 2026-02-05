@@ -8,7 +8,9 @@ import goodspace.bllsoneshot.global.exception.ExceptionMessage
 import goodspace.bllsoneshot.repository.user.LearningReportRepository
 import goodspace.bllsoneshot.repository.user.UserRepository
 import goodspace.bllsoneshot.report.dto.request.ReportCreateRequest
+import goodspace.bllsoneshot.report.dto.response.ReportExistsResponse
 import goodspace.bllsoneshot.report.dto.response.ReportResponse
+import goodspace.bllsoneshot.report.mapper.ReportExistsMapper
 import goodspace.bllsoneshot.report.mapper.ReportMapper
 import java.time.LocalDate
 import org.springframework.stereotype.Service
@@ -18,7 +20,8 @@ import org.springframework.transaction.annotation.Transactional
 class ReportService(
     private val userRepository: UserRepository,
     private val learningReportRepository: LearningReportRepository,
-    private val reportMapper: ReportMapper
+    private val reportMapper: ReportMapper,
+    private val reportExistsMapper: ReportExistsMapper
 ) {
 
     @Transactional
@@ -41,6 +44,27 @@ class ReportService(
         )
 
         return reportMapper.map(report)
+    }
+
+    @Transactional(readOnly = true)
+    fun getReportExists(
+        mentorId: Long,
+        menteeId: Long,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<ReportExistsResponse> {
+        val mentee = findUserBy(menteeId)
+        validateAssignedMentee(mentorId, mentee)
+
+        return Subject.entriesExcludeResource()
+            .map {
+                reportExistsMapper.map(
+                    menteeId = menteeId,
+                    subject = it,
+                    startDate = startDate,
+                    endDate = endDate
+                )
+            }
     }
 
     @Transactional(readOnly = true)

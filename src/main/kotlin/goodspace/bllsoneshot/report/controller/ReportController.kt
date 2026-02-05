@@ -3,6 +3,7 @@ package goodspace.bllsoneshot.report.controller
 import goodspace.bllsoneshot.entity.assignment.Subject
 import goodspace.bllsoneshot.global.security.userId
 import goodspace.bllsoneshot.report.dto.request.ReportCreateRequest
+import goodspace.bllsoneshot.report.dto.response.ReportExistsResponse
 import goodspace.bllsoneshot.report.dto.response.ReportResponse
 import goodspace.bllsoneshot.report.service.ReportService
 import io.swagger.v3.oas.annotations.Operation
@@ -60,6 +61,33 @@ class ReportController(
 
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(response)
+    }
+
+    @GetMapping("/mentee/{menteeId}/subjects")
+    @Operation(
+        summary = "학습 리포트 존재 여부 조회",
+        description = """
+            과목별로, 이미 학습 리포트가 작성되었는지 여부를 조회합니다.
+            
+            [요청]
+            startDate: 리포트 시작일(yyyy-MM-dd)
+            endDate: 리포트 종료일(yyyy-MM-dd)
+            
+            [응답]
+            subject: 과목(KOREAN, ENGLISH, MATH)
+        """
+    )
+    fun getReportExists(
+        principal: Principal,
+        @PathVariable menteeId: Long,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) startDate: LocalDate,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) endDate: LocalDate
+    ): ResponseEntity<List<ReportExistsResponse>> {
+        val mentorId = principal.userId
+
+        val response = reportService.getReportExists(mentorId, menteeId, startDate, endDate)
+
+        return ResponseEntity.ok(response)
     }
 
     @GetMapping("mentee/{menteeId}/subjects/{subject}")
