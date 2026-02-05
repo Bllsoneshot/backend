@@ -21,6 +21,13 @@ enum class ExceptionMessage(
     DATES_REQUIRED("날짜는 최소 1개 이상 선택해야 합니다."),
     DUPLICATE_DATES_NOT_ALLOWED("중복된 날짜는 선택할 수 없습니다."),
     PAST_DATES_NOT_ALLOWED("과거 날짜는 선택할 수 없습니다."),
+    MENTEE_ACCESS_DENIED("담당 멘티가 아닙니다."),
+    REPORT_DUPLICATE("동일한 기간과 과목의 학습 리포트가 이미 존재합니다."),
+    REPORT_DATE_INVALID("시작일은 종료일 이후일 수 없습니다."),
+    REPORT_CONTENT_REQUIRED("총평, 잘한 점, 보완할 점은 최소 1개 이상입니다."),
+    REPORT_CONTENT_CANNOT_BLANK("총평, 잘한 점, 보완할 점은 공백일 수 없습니다."),
+    REPORT_SUBJECT_INVALID("리포트에 사용할 수 없는 과목입니다."),
+    REPORT_NOT_FOUND("학습 리포트를 찾을 수 없습니다."),
     RESOURCE_SUBJECT_INVALID("자료 과목은 KOREAN, ENGLISH, MATH 중 하나여야 합니다."),
     RESOURCE_ACCESS_DENIED("해당 멘티의 자료에 대한 권한이 없습니다.")
 }
