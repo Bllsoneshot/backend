@@ -89,6 +89,21 @@ class ReportService(
         return reportMapper.map(report)
     }
 
+    @Transactional(readOnly = true)
+    fun getReceivedReport(
+        menteeId: Long,
+        subject: Subject,
+        date: LocalDate
+    ): ReportResponse {
+        val report = learningReportRepository.findByMenteeIdAndSubjectContainingDate(
+            menteeId = menteeId,
+            subject = subject,
+            date = date
+        ) ?: throw IllegalArgumentException(ExceptionMessage.REPORT_NOT_FOUND.message)
+
+        return reportMapper.map(report)
+    }
+
     private fun findUserBy(userId: Long): User {
         return userRepository.findById(userId)
             .orElseThrow { IllegalArgumentException(ExceptionMessage.USER_NOT_FOUND.message) }

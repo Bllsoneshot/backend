@@ -31,4 +31,18 @@ interface LearningReportRepository : JpaRepository<LearningReport, Long> {
         startDate: LocalDate,
         endDate: LocalDate
     ): LearningReport?
+
+    @Query(
+        """
+        SELECT r FROM LearningReport r
+        WHERE r.mentee.id = :menteeId
+        AND r.subject = :subject
+        AND :date BETWEEN r.startDate AND r.endDate
+        """
+    )
+    fun findByMenteeIdAndSubjectContainingDate(
+        menteeId: Long,
+        subject: Subject,
+        date: LocalDate
+    ): LearningReport?
 }
