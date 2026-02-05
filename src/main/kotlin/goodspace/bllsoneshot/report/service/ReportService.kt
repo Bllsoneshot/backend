@@ -2,6 +2,7 @@ package goodspace.bllsoneshot.report.service
 
 import goodspace.bllsoneshot.entity.assignment.GeneralComment
 import goodspace.bllsoneshot.entity.assignment.Subject
+import goodspace.bllsoneshot.entity.assignment.Task
 import goodspace.bllsoneshot.entity.user.LearningReport
 import goodspace.bllsoneshot.entity.user.User
 import goodspace.bllsoneshot.global.exception.ExceptionMessage
@@ -12,8 +13,11 @@ import goodspace.bllsoneshot.report.dto.response.ReportAmountResponse
 import goodspace.bllsoneshot.report.dto.response.ReportExistResponse
 import goodspace.bllsoneshot.report.dto.response.ReportExistsResponse
 import goodspace.bllsoneshot.report.dto.response.ReportResponse
+import goodspace.bllsoneshot.report.dto.response.ReportTaskResponse
 import goodspace.bllsoneshot.report.mapper.ReportExistsMapper
 import goodspace.bllsoneshot.report.mapper.ReportMapper
+import goodspace.bllsoneshot.report.mapper.ReportTaskMapper
+import goodspace.bllsoneshot.repository.task.TaskRepository
 import java.time.LocalDate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,8 +26,10 @@ import org.springframework.transaction.annotation.Transactional
 class ReportService(
     private val userRepository: UserRepository,
     private val learningReportRepository: LearningReportRepository,
+    private val taskRepository: TaskRepository,
     private val reportMapper: ReportMapper,
-    private val reportExistsMapper: ReportExistsMapper
+    private val reportExistsMapper: ReportExistsMapper,
+    private val reportTaskMapper: ReportTaskMapper
 ) {
 
     @Transactional
@@ -96,14 +102,18 @@ class ReportService(
         menteeId: Long,
         subject: Subject,
         date: LocalDate
-    ): ReportResponse {
+    ): ReportTaskResponse {
         val report = learningReportRepository.findByMenteeIdAndSubjectContainingDate(
             menteeId = menteeId,
             subject = subject,
             date = date
         ) ?: throw IllegalArgumentException(ExceptionMessage.REPORT_NOT_FOUND.message)
 
-        return reportMapper.map(report)
+        // TODO: 자료가 아닌 할 일만 조회하도록 수정.
+        val tasks = taskRepository.findDateBetweenTasks(menteeId, report.startDate, report.endDate)
+            .filter { it.subject == report.subject }
+
+        return reportTaskMapper.map(report, tasks)
     }
 
     @Transactional(readOnly = true)

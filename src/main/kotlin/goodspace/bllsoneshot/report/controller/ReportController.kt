@@ -7,6 +7,7 @@ import goodspace.bllsoneshot.report.dto.response.ReportAmountResponse
 import goodspace.bllsoneshot.report.dto.response.ReportExistResponse
 import goodspace.bllsoneshot.report.dto.response.ReportExistsResponse
 import goodspace.bllsoneshot.report.dto.response.ReportResponse
+import goodspace.bllsoneshot.report.dto.response.ReportTaskResponse
 import goodspace.bllsoneshot.report.service.ReportService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -196,7 +197,7 @@ class ReportController(
         principal: Principal,
         @PathVariable subject: Subject,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) date: LocalDate
-    ): ResponseEntity<ReportResponse> {
+    ): ResponseEntity<ReportTaskResponse> {
         val menteeId = principal.userId
 
         val response = reportService.getReceivedReport(menteeId, subject, date)
