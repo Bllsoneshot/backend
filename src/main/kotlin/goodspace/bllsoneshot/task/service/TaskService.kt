@@ -10,12 +10,14 @@ import goodspace.bllsoneshot.repository.user.UserRepository
 import goodspace.bllsoneshot.task.dto.request.*
 import goodspace.bllsoneshot.task.dto.response.TaskDetailResponse
 import goodspace.bllsoneshot.task.dto.response.submit.TaskSubmitResponse
+import goodspace.bllsoneshot.task.dto.response.TasksResponse
 import goodspace.bllsoneshot.task.dto.response.TaskResponse
 import goodspace.bllsoneshot.task.dto.response.feedback.TaskFeedbackResponse
 import goodspace.bllsoneshot.task.mapper.TaskDetailMapper
 import goodspace.bllsoneshot.task.mapper.TaskFeedbackMapper
-import goodspace.bllsoneshot.task.mapper.TaskSubmitMapper
 import goodspace.bllsoneshot.task.mapper.TaskMapper
+import goodspace.bllsoneshot.task.mapper.TasksMapper
+import goodspace.bllsoneshot.task.mapper.TaskSubmitMapper
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
@@ -26,6 +28,7 @@ class TaskService(
     private val fileRepository: FileRepository,
     private val userRepository: UserRepository,
     private val taskMapper: TaskMapper,
+    private val tasksMapper: TasksMapper,
     private val taskDetailMapper: TaskDetailMapper,
     private val taskFeedbackMapper: TaskFeedbackMapper,
     private val taskSubmitMapper: TaskSubmitMapper
@@ -35,10 +38,10 @@ class TaskService(
     fun findTasksByDate(
         userId: Long,
         date: LocalDate
-    ): List<TaskResponse> {
+    ): TasksResponse {
         val tasks = taskRepository.findCurrentTasks(userId, date)
 
-        return taskMapper.map(tasks)
+        return tasksMapper.map(tasks)
     }
 
     @Transactional

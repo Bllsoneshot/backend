@@ -9,6 +9,7 @@ import goodspace.bllsoneshot.task.dto.request.TaskCompleteRequest
 import goodspace.bllsoneshot.task.dto.request.TaskSubmitRequest
 import goodspace.bllsoneshot.task.dto.response.TaskDetailResponse
 import goodspace.bllsoneshot.task.dto.response.TaskResponse
+import goodspace.bllsoneshot.task.dto.response.TasksResponse
 import goodspace.bllsoneshot.task.dto.response.feedback.TaskFeedbackResponse
 import goodspace.bllsoneshot.task.dto.response.submit.TaskSubmitResponse
 import goodspace.bllsoneshot.task.service.TaskService
@@ -58,7 +59,7 @@ class TaskController(
         @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         date: LocalDate
-    ): ResponseEntity<List<TaskResponse>> {
+    ): ResponseEntity<TasksResponse> {
         val userId = principal.userId
 
         val response = taskService.findTasksByDate(userId, date)
