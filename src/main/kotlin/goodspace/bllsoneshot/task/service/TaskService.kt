@@ -49,6 +49,7 @@ class TaskService(
         val mentee: User = userRepository.findById(request.menteeId)
             .orElseThrow { IllegalArgumentException(USER_NOT_FOUND.message) }
 
+        validateMentorMenteeRelation(mentee, mentorId)
         validateDate(request.dates)
         validateTaskNames(request.taskNames)
 
@@ -269,6 +270,10 @@ class TaskService(
     private fun findTaskBy(taskId: Long): Task {
         return taskRepository.findById(taskId)
             .orElseThrow { IllegalArgumentException(TASK_NOT_FOUND.message) }
+    }
+
+    private fun validateMentorMenteeRelation(mentee: User, mentorId: Long) {
+        check(mentee.mentor?.id == mentorId) { MENTOR_MENTEE_RELATION_DENIED.message }
     }
 
     private fun validateTaskOwnership(
