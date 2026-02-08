@@ -16,4 +16,13 @@ interface UserRepository : JpaRepository<User, Long> {
         """
     )
     fun findMenteesWithSubjectsByMentorId(mentorId: Long): List<User>
+
+    @Query(
+        """
+        SELECT u FROM User u
+        LEFT JOIN FETCH u.subjects
+        WHERE u.id = :menteeId
+        """
+    )
+    fun findMenteeWithSubjectsById(menteeId: Long): User?
 }
