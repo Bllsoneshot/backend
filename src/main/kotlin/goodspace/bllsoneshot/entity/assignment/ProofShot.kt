@@ -27,6 +27,10 @@ class ProofShot(
         get() = comments.filter { it.isQuestion }
 
     @get:Transient
-    val registeredFeedbackComments: List<Comment>
-        get() = comments.filter { it.isFeedback && it.isRegistered }
+    val confirmedFeedbackComments: List<Comment>
+        get() = comments.filter { it.isFeedback && it.isConfirmed }
+
+    @get:Transient
+    val allFeedbackComments: List<Comment>
+        get() = comments.filter { it.isFeedback }
 }

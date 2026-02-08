@@ -277,7 +277,7 @@ class TaskService(
                     annotation = annotation,
                     content = question.content,
                     type = CommentType.QUESTION,
-                    registerStatus = RegisterStatus.REGISTERED
+                    registerStatus = RegisterStatus.CONFIRMED
                 )
 
                 proofShot.comments.add(comment)

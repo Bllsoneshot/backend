@@ -12,7 +12,7 @@ class ProofShotMapper(
 
     fun map(proofShot: ProofShot): ProofShotResponse {
         val questions = proofShot.questComments.sortedBy { it.annotation.number }
-        val feedbacks = proofShot.registeredFeedbackComments.sortedBy { it.annotation.number }
+        val feedbacks = proofShot.confirmedFeedbackComments.sortedBy { it.annotation.number }
 
         return ProofShotResponse(
             proofShotId = proofShot.id!!,
