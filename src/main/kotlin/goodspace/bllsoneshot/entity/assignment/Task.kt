@@ -16,7 +16,7 @@ class Task(
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val subject: Subject,
+    var subject: Subject,
 
     val date: LocalDate? = null,
 
@@ -34,21 +34,21 @@ class Task(
     val isResource: Boolean = false
 ) : BaseEntity() {
     // Task 저장시 연관 엔티티도 함게 저장, 삭제되도록 cascade 및 orphanRemoval 설정
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     val worksheets: MutableList<Worksheet> = mutableListOf()
 
     @BatchSize(size = 50)
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     val columnLinks: MutableList<ColumnLink> = mutableListOf()
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     val proofShots: MutableList<ProofShot> = mutableListOf()
 
-    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     val comments: MutableList<Comment> = mutableListOf()
 
-    @OneToOne(fetch = FetchType.LAZY)
-    val generalComment: GeneralComment? = null
+    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
+    var generalComment: GeneralComment? = null
 
     @Column(nullable = false)
     var completed: Boolean = false
@@ -69,19 +69,30 @@ class Task(
         proofShots.isNotEmpty()
 
     fun hasFeedback(): Boolean =
-        comments.any { it.isFeedback && it.isRegistered }
+        comments.any { it.isFeedback && it.isConfirmed }
 
     fun hasReadAllFeedbacks(): Boolean {
         if (!hasFeedback()) {
             return true
         }
 
-        return comments.filter { it.isFeedback && it.isRegistered }
+        return comments.filter { it.isFeedback && it.isConfirmed }
             .all { it.isRead }
     }
 
     fun markFeedbackAsRead() {
         comments.forEach { it.markAsRead() }
+    }
+
+    // TODO: 로직 이해하기
+    //  피드백 재저장 시, 기존 FEEDBACK 타입 Comment만 삭제하고 QUESTION은 보존한다.
+    //  Comment는 task.comments와 proofShot.comments 양쪽에 참조되어 있으므로,
+    //  orphanRemoval이 정상 동작하려면 반드시 양쪽 컬렉션에서 모두 제거해야 한다.
+    fun clearFeedbackComments() {
+        proofShots.forEach { ps ->
+            ps.comments.removeIf { it.isFeedback }
+        }
+        comments.removeIf { it.isFeedback }
     }
 
     companion object {

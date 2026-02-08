@@ -10,6 +10,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
+import jakarta.persistence.Table
 import jakarta.persistence.Transient
 
 @Entity
@@ -20,8 +21,8 @@ class Comment(
 
     @ManyToOne(fetch = FetchType.LAZY)
     val proofShot: ProofShot,
-    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
-    val commentAnnotation: CommentAnnotation,
+    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+    val annotation: CommentAnnotation,
 
     @Column(nullable = false)
     val content: String,
@@ -33,7 +34,7 @@ class Comment(
     val type: CommentType,
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    val registerStatus: RegisterStatus = RegisterStatus.REGISTERED
+    val registerStatus: RegisterStatus = RegisterStatus.CONFIRMED
 ) : BaseEntity() {
 
     init {
@@ -43,7 +44,7 @@ class Comment(
         }
     }
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
+    @OneToOne(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     var answer: Answer? = null
 
     private var readByMentee: Boolean = false
@@ -57,8 +58,8 @@ class Comment(
         get() = type == CommentType.FEEDBACK
 
     @get:Transient
-    val isRegistered: Boolean
-        get() = registerStatus == RegisterStatus.REGISTERED
+    val isConfirmed: Boolean
+        get() = registerStatus == RegisterStatus.CONFIRMED
 
     @get:Transient
     val isRead: Boolean

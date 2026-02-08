@@ -19,7 +19,7 @@ class ProofShot(
     @JoinColumn(nullable = false)
     val file: File
 ) : BaseEntity() {
-    @OneToMany(mappedBy = "proofShot", fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
+    @OneToMany(mappedBy = "proofShot", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
     val comments: MutableList<Comment> = mutableListOf()
 
     @get:Transient
@@ -27,6 +27,10 @@ class ProofShot(
         get() = comments.filter { it.isQuestion }
 
     @get:Transient
-    val registeredFeedbackComments: List<Comment>
-        get() = comments.filter { it.isFeedback && it.isRegistered }
+    val confirmedFeedbackComments: List<Comment>
+        get() = comments.filter { it.isFeedback && it.isConfirmed }
+
+    @get:Transient
+    val allFeedbackComments: List<Comment>
+        get() = comments.filter { it.isFeedback }
 }
