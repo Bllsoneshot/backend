@@ -7,5 +7,5 @@ import jakarta.persistence.Entity
 @Entity
 class GeneralComment(
     @Column(nullable = false)
-    val content: String
+    var content: String
 ) : BaseEntity()

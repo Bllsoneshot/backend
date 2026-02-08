@@ -29,4 +29,8 @@ class ProofShot(
     @get:Transient
     val registeredFeedbackComments: List<Comment>
         get() = comments.filter { it.isFeedback && it.isRegistered }
+
+    @get:Transient
+    val allFeedbackComments: List<Comment>
+        get() = comments.filter { it.isFeedback }
 }
