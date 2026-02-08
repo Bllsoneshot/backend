@@ -6,6 +6,8 @@ import goodspace.bllsoneshot.file.dto.FileUploadResponse
 import goodspace.bllsoneshot.repository.file.FileRepository
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
+import org.springframework.http.MediaTypeFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -33,9 +35,10 @@ class FileService(
 
     @Transactional
     fun uploadFile(file: MultipartFile, folder: String): FileUploadResponse {
-        validateFile(file)
+        val contentType = resolveContentType(file)
+        validateFile(file, contentType)
 
-        val uploaded = uploadToS3(file, folder)
+        val uploaded = uploadToS3(file, folder, contentType)
 
         try {
             val savedFile = fileRepository.save(
@@ -54,7 +57,6 @@ class FileService(
             throw e
         }
     }
-
 
     @Transactional
     fun deleteFile(fileId: Long) {
@@ -79,18 +81,47 @@ class FileService(
         )
     }
 
-    private fun validateFile(file: MultipartFile) {
+    /**
+     * 클라이언트가 전송한 Content-Type을 우선 사용하되,
+     * null이거나 application/octet-stream(바이너리 기본 타입)인 경우
+     * 파일 확장자 기반으로 MIME 타입을 추론한다.
+     *
+     * 근거: 일부 HTTP 클라이언트(프론트엔드 라이브러리 등)가 PDF 파일의
+     * Content-Type을 누락하거나 application/octet-stream으로 전송하는 경우가 있다.
+     * 이미지 파일은 브라우저가 정확한 Content-Type을 설정하지만,
+     * PDF 등 비이미지 파일은 클라이언트 구현에 따라 누락될 수 있다.
+     */
+    private fun resolveContentType(file: MultipartFile): String? {
+        val clientType = file.contentType
+            ?.substringBefore(';')  // 파라미터 제거 (예: "application/pdf; charset=utf-8" → "application/pdf")
+            ?.trim()
+            ?.lowercase()
+            ?.takeIf { it.isNotBlank() && it != MediaType.APPLICATION_OCTET_STREAM_VALUE }
+
+        if (clientType != null) return clientType
+
+        // 클라이언트 Content-Type이 없거나 generic인 경우, 파일 확장자로 추론
+        return MediaTypeFactory.getMediaType(file.originalFilename ?: "")
+            .map { it.toString() }
+            .orElse(null)
+    }
+
+    private fun validateFile(file: MultipartFile, contentType: String?) {
         require(!file.isEmpty) { "파일이 비어 있습니다." }
-        require(file.contentType in ALLOWED_TYPES) { "지원하지 않는 파일 타입입니다." }
+        require(contentType in ALLOWED_TYPES) {
+            "지원하지 않는 파일 타입입니다. (type=$contentType, 허용: $ALLOWED_TYPES)"
+        }
         require(file.size <= maxBytes) { "파일 용량이 너무 큽니다." }
     }
 
-    private fun uploadToS3(file: MultipartFile, folder: String): UploadedFile {
+    private fun uploadToS3(file: MultipartFile, folder: String, contentType: String?): UploadedFile {
         val objectKey = buildObjectKey(file, folder)
+        val safeContentType = contentType ?: "application/octet-stream"
+
         val request = PutObjectRequest.builder()
             .bucket(bucket)
             .key(objectKey)
-            .contentType(file.contentType ?: "application/octet-stream") // null 일 땐 바이너리 기본타입
+            .contentType(safeContentType)
             .contentLength(file.size)
             .build()
 
@@ -99,7 +130,7 @@ class FileService(
         return UploadedFile(
             objectKey = objectKey,
             fileName = file.originalFilename ?: "file",
-            contentType = file.contentType ?: "application/octet-stream",
+            contentType = safeContentType,
             byteSize = file.size,
             bucketName = bucket
         )
