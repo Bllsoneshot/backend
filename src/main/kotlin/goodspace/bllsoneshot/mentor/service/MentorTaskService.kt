@@ -9,6 +9,7 @@ import goodspace.bllsoneshot.mentor.dto.request.QuestionAnswerRequest
 import goodspace.bllsoneshot.mentor.dto.response.MentorTaskDetailResponse
 import goodspace.bllsoneshot.mentor.dto.response.MentorTaskEditResponse
 import goodspace.bllsoneshot.mentor.mapper.MentorTaskMapper
+import goodspace.bllsoneshot.notification.service.NotificationService
 import goodspace.bllsoneshot.repository.file.FileRepository
 import goodspace.bllsoneshot.repository.task.TaskRepository
 import org.springframework.stereotype.Service
@@ -18,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional
 class MentorTaskService(
     private val taskRepository: TaskRepository,
     private val fileRepository: FileRepository,
-    private val mentorTaskMapper: MentorTaskMapper
+    private val mentorTaskMapper: MentorTaskMapper,
+    private val notificationService: NotificationService
 ) {
 
     @Transactional(readOnly = true)
@@ -68,6 +70,16 @@ class MentorTaskService(
         updateAnswers(task, request.questionAnswers)
 
         taskRepository.save(task)
+
+        // 멘티에게 피드백 알림 전송
+        val mentorName = task.mentee.mentor?.name ?: "멘토"
+        notificationService.notify(
+            receiver = task.mentee,
+            type = NotificationType.FEEDBACK,
+            title = "피드백 도착",
+            message = "할 일 '${task.name}'에 멘토 ${mentorName}의 피드백이 달렸어요!",
+            task = task
+        )
     }
 
     @Transactional
@@ -204,7 +216,7 @@ class MentorTaskService(
     private fun updateTemporaryGeneralComment(task: Task, temporaryContent: String?) {
         // 빈 값이면 null로 저장
         val contentToSave = temporaryContent?.ifBlank { null }
-        
+
         val existing = task.generalComment
         if (existing != null) {
             existing.temporaryContent = contentToSave

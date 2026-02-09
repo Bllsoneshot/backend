@@ -6,6 +6,7 @@ import goodspace.bllsoneshot.entity.assignment.Subject
 import goodspace.bllsoneshot.entity.assignment.Task
 import goodspace.bllsoneshot.mentor.dto.response.FeedbackRequiredTaskResponse
 import goodspace.bllsoneshot.mentor.dto.response.PendingUploadMenteeResponse
+import goodspace.bllsoneshot.notification.dto.response.UnfinishedTaskCountResponse
 import java.time.LocalDate
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -194,6 +195,27 @@ interface TaskRepository : JpaRepository<Task, Long> {
         """
     )
     fun findResourceByIdWithMentee(resourceId: Long): Task?
+
+    // ── 리마인더 스케줄러용 쿼리 ──────────────────────
+
+    /**
+     * 오늘 할 일 중 ProofShot 미제출 건수를 멘티별로 집계한다.
+     */
+    @Query(
+        """
+        SELECT new goodspace.bllsoneshot.notification.dto.response.UnfinishedTaskCountResponse(
+            t.mentee.id, COUNT(t)
+        )
+        FROM Task t
+        LEFT JOIN t.proofShots ps
+        WHERE t.date = :date
+        AND t.isResource = false
+        AND ps.id IS NULL
+        GROUP BY t.mentee.id
+        """
+    )
+    fun countUnfinishedTasksByMentee(date: LocalDate): List<UnfinishedTaskCountResponse>
+
 
     @Query(
         """
