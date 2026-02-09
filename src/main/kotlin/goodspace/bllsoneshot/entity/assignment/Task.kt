@@ -72,8 +72,10 @@ class Task(
     fun hasFeedback(): Boolean =
         proofShots.any { it.hasFeedback() }
 
-    fun hasReadAllFeedbacks() =
-        proofShots.all { it.hasReadAllFeedbacks() }
+    fun hasReadAllFeedbacks(): Boolean {
+        if (!hasFeedback()) return false
+        return proofShots.all { it.hasReadAllFeedbacks() }
+    }
 
     fun markFeedbackAsRead() {
         proofShots.forEach { it.markFeedbackAsRead() }
