@@ -50,6 +50,7 @@ class TaskController(
 
             [요청]
             date: 조회할 날짜(yyyy-MM-dd)
+            includeResources: 자료도 포함해 조회할지 여부(기본값 false)
 
             [응답]
             createdBy: 할 일을 만든 사람(ROLE_MENTOR / ROLE_MENTEE)
@@ -58,13 +59,15 @@ class TaskController(
     )
     fun getDailyTasks(
         principal: Principal,
+        @RequestParam(defaultValue = "false")
+        includeResources: Boolean,
         @RequestParam
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
         date: LocalDate
     ): ResponseEntity<TasksResponse> {
         val userId = principal.userId
 
-        val response = taskService.findTasksByDate(userId, date)
+        val response = taskService.findTasksByDate(userId, includeResources, date)
 
         return ResponseEntity.ok(response)
     }

@@ -25,6 +25,16 @@ interface TaskRepository : JpaRepository<Task, Long> {
     @Query(
         """
         SELECT t FROM Task t
+        WHERE t.mentee.id = :userId
+        AND t.date = :date
+        AND t.isResource = true
+        """
+    )
+    fun findCurrentTasksIncludeResource(userId: Long, date: LocalDate): List<Task>
+
+    @Query(
+        """
+        SELECT t FROM Task t
         WHERE t.mentee.id = :menteeId
         AND t.date BETWEEN :startDate AND :endDate
         AND t.subject = :subject

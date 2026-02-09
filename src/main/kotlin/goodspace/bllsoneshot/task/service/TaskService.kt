@@ -38,9 +38,14 @@ class TaskService(
     @Transactional(readOnly = true)
     fun findTasksByDate(
         userId: Long,
+        includeResources: Boolean,
         date: LocalDate
     ): TasksResponse {
-        val tasks = taskRepository.findCurrentTasks(userId, date)
+        val tasks = if (includeResources) {
+            taskRepository.findCurrentTasksIncludeResource(userId, date)
+        } else {
+            taskRepository.findCurrentTasks(userId, date)
+        }
 
         return tasksMapper.map(tasks)
     }
