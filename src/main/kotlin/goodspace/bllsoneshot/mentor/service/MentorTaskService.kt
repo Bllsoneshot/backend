@@ -99,6 +99,7 @@ class MentorTaskService(
         validateMentorAccess(mentorId, task)
 
         task.subject = request.subject
+        task.date = request.date
         task.name = request.taskName
         task.goalMinutes = request.goalMinutes
         replaceWorksheets(task, request)

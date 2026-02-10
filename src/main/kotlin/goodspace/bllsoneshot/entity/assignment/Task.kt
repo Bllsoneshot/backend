@@ -18,7 +18,7 @@ class Task(
     @Column(nullable = false)
     var subject: Subject,
 
-    val date: LocalDate? = null,
+    var date: LocalDate? = null,
 
     @Column(nullable = false)
     var name: String,
