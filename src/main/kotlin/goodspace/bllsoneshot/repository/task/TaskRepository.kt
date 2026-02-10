@@ -150,14 +150,13 @@ interface TaskRepository : JpaRepository<Task, Long> {
         """
         SELECT DISTINCT t.mentee.id
         FROM Task t
-        LEFT JOIN t.proofShots ps
         WHERE t.mentee.id IN :menteeIds
         AND t.date = :date
         AND t.isResource = false
-        AND ps.id IS NULL
+        AND t.completed = false
         """
     )
-    fun findMenteeIdsWithUnsubmittedTasks(menteeIds: List<Long>, date: LocalDate): List<Long>
+    fun findMenteeIdsWithIncompletedTasks(menteeIds: List<Long>, date: LocalDate): List<Long>
 
     @Query(
         """
