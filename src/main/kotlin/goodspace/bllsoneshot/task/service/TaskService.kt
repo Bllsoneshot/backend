@@ -193,7 +193,7 @@ class TaskService(
         validateTaskCompletable(task, request.currentDate)
 
         task.actualMinutes = request.actualMinutes
-        task.completed = true
+        task.markAsCompleted(request.currentDate)
     }
 
     @Transactional
@@ -321,10 +321,6 @@ class TaskService(
     private fun findTaskBy(taskId: Long): Task {
         val task = taskRepository.findById(taskId)
             .orElseThrow { IllegalArgumentException(TASK_NOT_FOUND.message) }
-
-        if (task.isResource) {
-            throw IllegalArgumentException(TASK_NOT_FOUND.message)
-        }
 
         return task
     }

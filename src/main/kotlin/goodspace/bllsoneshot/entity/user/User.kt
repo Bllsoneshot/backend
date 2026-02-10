@@ -1,6 +1,7 @@
 package goodspace.bllsoneshot.entity.user
 
 import goodspace.bllsoneshot.entity.BaseEntity
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -33,11 +34,8 @@ class User(
     @Column(columnDefinition = "MEDIUMBLOB")
     val profileImage: ByteArray? = null
 ) : BaseEntity() {
-    @OneToMany(mappedBy = "mentee", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "mentee", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     val subjects: MutableList<MenteeSubject> = mutableListOf()
-
-    @OneToMany(mappedBy = "mentee", fetch = FetchType.LAZY)
-    val reports: MutableList<LearningReport> = mutableListOf()
 
     var refreshToken: String? = null
 

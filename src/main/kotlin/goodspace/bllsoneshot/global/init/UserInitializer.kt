@@ -1,5 +1,7 @@
 package goodspace.bllsoneshot.global.init
 
+import goodspace.bllsoneshot.entity.assignment.Subject
+import goodspace.bllsoneshot.entity.user.MenteeSubject
 import goodspace.bllsoneshot.entity.user.User
 import goodspace.bllsoneshot.entity.user.UserRole
 import goodspace.bllsoneshot.entity.user.UserRole.ROLE_MENTEE
@@ -88,6 +90,13 @@ class UserInitializer(
             mentor = mentor,
             profileImage = profileImage
         )
+
+        val subjects = listOf(
+            MenteeSubject(user, Subject.KOREAN),
+            MenteeSubject(user, Subject.ENGLISH),
+            MenteeSubject(user, Subject.MATH),
+        )
+        user.subjects.addAll(subjects)
 
         return userRepository.save(user)
     }
