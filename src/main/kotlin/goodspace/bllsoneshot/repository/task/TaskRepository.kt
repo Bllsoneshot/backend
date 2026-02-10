@@ -10,6 +10,7 @@ import goodspace.bllsoneshot.notification.dto.response.UnfinishedTaskCountRespon
 import java.time.LocalDate
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 
 interface TaskRepository : JpaRepository<Task, Long> {
 
@@ -160,18 +161,16 @@ interface TaskRepository : JpaRepository<Task, Long> {
 
     @Query(
         """
-        SELECT t FROM Task t
-        WHERE t.mentee.id IN :menteeIds
-        AND t.isResource = false
-        AND t.date = (
-            SELECT MAX(t2.date) FROM Task t2
-            WHERE t2.mentee = t.mentee
-            AND t2.isResource = false
-        )
-        ORDER BY t.mentee.id, t.id DESC
-        """
+    SELECT t FROM Task t
+    WHERE t.mentee.id IN :menteeIds
+    AND t.isResource = false
+    AND t.completedAt IS NOT NULL
+    ORDER BY t.completedAt DESC
+    """
     )
-    fun findMostRecentTasksByMenteeIds(menteeIds: List<Long>): List<Task>
+    fun findMostRecentTaskByMenteeIds(
+        @Param("menteeIds") menteeIds: List<Long>
+    ): List<Task>
 
     @Query(
         """

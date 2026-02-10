@@ -85,9 +85,9 @@ class MentorDashboardService(
             .toSet()
 
         val recentTaskByMenteeId = taskRepository
-            .findMostRecentTasksByMenteeIds(menteeIds)
+            .findMostRecentTaskByMenteeIds(menteeIds)
             .groupBy { it.mentee.id!! }
-            .mapValues { (_, tasks) -> tasks.first() }
+            .mapValues { (_, tasks) -> tasks.first() } // completedAt DESC이므로 first가 가장 최근
 
         val menteeDetails = mentees.map { mentee ->
             val recentTask = recentTaskByMenteeId[mentee.id]

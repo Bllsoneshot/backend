@@ -7,6 +7,7 @@ import goodspace.bllsoneshot.global.exception.ExceptionMessage.NEGATIVE_ACTUAL_M
 import jakarta.persistence.*
 import org.hibernate.annotations.BatchSize
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Entity
 class Task(
@@ -49,6 +50,9 @@ class Task(
 
     @Column(nullable = false)
     var completed: Boolean = false
+        protected set
+
+    var completedAt: LocalDate? = null
 
     @get:Transient
     val questions: List<Comment>
@@ -82,6 +86,11 @@ class Task(
 
     fun markFeedbackAsRead() {
         proofShots.forEach { it.markFeedbackAsRead() }
+    }
+
+    fun markAsCompleted(date: LocalDate) {
+        completed = true
+        completedAt = date
     }
 
     // TODO: 로직 이해하기
