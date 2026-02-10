@@ -21,7 +21,7 @@ class TaskMapper {
             hasFeedback = task.hasFeedback(),
             hasWorksheet = task.hasWorkSheet(),
             hasProofShot = task.hasProofShot(),
-            isResources = task.isResource
+            isResource = task.isResource
         )
     }
 
