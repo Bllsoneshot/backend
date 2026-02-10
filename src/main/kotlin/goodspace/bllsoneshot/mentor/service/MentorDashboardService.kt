@@ -80,8 +80,8 @@ class MentorDashboardService(
 
         val menteeIds = mentees.map { it.id!! }
 
-        val unsubmittedMenteeIds = taskRepository
-            .findMenteeIdsWithUnsubmittedTasks(menteeIds, date)
+        val incompletedMenteeIds = taskRepository
+            .findMenteeIdsWithIncompletedTasks(menteeIds, date)
             .toSet()
 
         val recentTaskByMenteeId = taskRepository
@@ -98,7 +98,7 @@ class MentorDashboardService(
                 subjects = mentee.subjects.map { it.subject },
                 recentTaskDate = recentTask?.date,
                 recentTaskName = recentTask?.name,
-                submitted = mentee.id!! !in unsubmittedMenteeIds
+                submitted = mentee.id!! !in incompletedMenteeIds
             )
         }
 
